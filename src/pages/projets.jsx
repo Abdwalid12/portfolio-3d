@@ -1,90 +1,44 @@
 import React, { Suspense } from 'react';
-import { useGLTF, Stage, PresentationControls } from '@react-three/drei';
-import Scene3D from '../components/Scene3D';
+import { useGLTF, Stage, PresentationControls, Center } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
 
-// Composant interne pour charger les modèles GLB
 const Model = ({ path }) => {
   const { scene } = useGLTF(path);
-  // Clone la scène pour pouvoir l'utiliser plusieurs fois si nécessaire
   return <primitive object={scene.clone()} />;
 };
 
 const Projets = () => {
   const projets = [
-    {
-      id: 1,
-      titre: 'Application E-Commerce',
-      description: 'Une plateforme de vente en ligne moderne avec gestion de panier et paiement sécurisé.',
-      technologie: 'React, Node.js, MongoDB',
-      modelPath: '/models/fountain.glb', // Assurez-vous du chemin dans /public
-    },
-    {
-      id: 2,
-      titre: 'Dashboard Analytique',
-      description: 'Tableau de bord interactif pour visualiser des données en temps réel avec graphiques 3D.',
-      technologie: 'React, D3.js, WebGL',
-      modelPath: '/models/pouf.glb',
-    },
-    {
-      id: 3,
-      titre: 'Jeu 3D Multi-joueurs',
-      description: 'Jeu en ligne avec environnement 3D immersif et interactions en temps réel.',
-      technologie: 'Three.js, Socket.io, Express',
-      modelPath: '/models/teapot.glb',
-    },
+    { id: 1, titre: 'E-Commerce View', description: 'Gestion 3D immersive.', tech: 'React, Node', model: '/models/fountain.glb' },
+    { id: 2, titre: 'Data Dashboard', description: 'Visualisation temps réel.', tech: 'Three.js, D3', model: '/models/pouf.glb' },
+    { id: 3, titre: '3D Multiplayer', description: 'Jeu en ligne interactif.', tech: 'Socket.io', model: '/models/teapot.glb' },
   ];
 
   return (
-    <div className="min-h-screen bg-white py-16 sm:py-24 lg:py-32">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-16 sm:mb-24 lg:mb-32">
-          <h2 className="text-5xl sm:text-6xl md:text-7xl font-light text-gray-900 mb-6 text-center">
-            Mes Projets
-          </h2>
-          <p className="text-center text-gray-600 text-lg sm:text-xl font-light max-w-2xl mx-auto">
-            Découvrez mes réalisations avec des aperçus interactifs de modèles 3D
-          </p>
-        </div>
+    <div className="min-h-screen bg-white py-32">
+      <div className="container mx-auto px-6 text-center">
+        <h2 className="text-6xl md:text-8xl font-light mb-24 tracking-tighter">Portfolio</h2>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 sm:gap-16">
-          {projets.map((projet) => (
-            <div key={projet.id} className="flex flex-col group">
-              
-              {/* 3D Preview Container */}
-              <div className="h-56 sm:h-64 md:h-72 bg-gray-50 relative flex-shrink-0 mb-8 overflow-hidden rounded-lg">
-                <Scene3D cameraPosition={[0, 0, 4]}>
-                  {/* Suspense gère l'attente pendant le chargement du fichier .glb */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-20 lg:gap-16 justify-center items-center max-w-7xl mx-auto">
+          {projets.map((p) => (
+            <div key={p.id} className="flex flex-col space-y-8 bg-white p-6 rounded-3xl transition-all hover:shadow-xl border border-gray-50">
+              <div className="h-[400px] bg-gray-50 rounded-2xl overflow-hidden">
+                <Canvas camera={{ position: [0, 0, 4] }}>
                   <Suspense fallback={null}>
-                    {/* PresentationControls permet à l'utilisateur de faire tourner l'objet à la souris */}
-                    <PresentationControls global zoom={0.8} config={{ mass: 2, tension: 500 }} snap>
-                      {/* Stage gère automatiquement l'éclairage et le centrage du modèle */}
-                      <Stage environment="city" intensity={0.6} contactShadow={true}>
-                        <Model path={projet.modelPath} />
+                    <PresentationControls global config={{ mass: 2, tension: 500 }} snap>
+                      <Stage environment="city" intensity={0.5} contactShadow={true}>
+                        <Center><Model path={p.model} /></Center>
                       </Stage>
                     </PresentationControls>
                   </Suspense>
-                </Scene3D>
+                </Canvas>
               </div>
-              
-              {/* Project Info */}
-              <div className="flex flex-col">
-                <h3 className="text-2xl font-light text-gray-900 mb-4">{projet.titre}</h3>
-                <p className="text-base text-gray-600 mb-6 font-light leading-relaxed flex-grow">
-                  {projet.description}
-                </p>
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {projet.technologie.split(', ').map((tech, idx) => (
-                    <span 
-                      key={idx}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium"
-                    >
-                      {tech}
-                    </span>
-                  ))}
+              <div className="space-y-4">
+                <h3 className="text-2xl font-light tracking-tight">{p.titre}</h3>
+                <p className="text-gray-500 font-light text-sm leading-relaxed">{p.description}</p>
+                <div className="pt-4 border-t border-gray-100 text-[10px] uppercase tracking-[0.2em] text-indigo-600 font-bold">
+                  {p.tech}
                 </div>
-                <button className="w-full bg-indigo-600 text-white py-3 rounded-none hover:bg-indigo-700 transition font-medium text-sm sm:text-base">
-                  Voir le projet
-                </button>
               </div>
             </div>
           ))}
