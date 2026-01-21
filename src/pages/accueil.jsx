@@ -1,16 +1,33 @@
+import React, { Suspense, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import Scene3D from '../components/Scene3D';
-import RotatingSphere from '../components/RotatingSphere';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useGLTF, Stage, PresentationControls, Center } from '@react-three/drei';
+
+// Composant pour charger la carte du Maroc
+const MoroccoMap = () => {
+  const { scene } = useGLTF('./models/morocco_map.glb'); // Vérifiez bien le nom du fichier
+  const mapRef = useRef();
+
+  // Animation de rotation très lente pour donner de la vie
+  useFrame((state) => {
+    if (mapRef.current) {
+      mapRef.current.rotation.y += 0.002;
+    }
+  });
+
+  return <primitive ref={mapRef} object={scene} scale={1.5} />;
+};
 
 const Accueil = () => {
   const nom = useSelector((state) => state.user.nom);
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-20">
-          {/* Text Content */}
-          <div className="flex-1 w-full lg:w-auto">
+      <div className="px-8 sm:px-12 lg:px-20 py-16 sm:py-24 lg:py-32">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-20 lg:gap-32">
+          
+          {/* Texte à gauche */}
+          <div className="w-full lg:w-1/2 order-2 lg:order-1">
             <h1 className="text-5xl sm:text-6xl md:text-7xl font-light text-gray-900 mb-6 leading-tight tracking-tight">
               {nom ? `Bienvenue, ${nom}` : "Bienvenue"}
             </h1>
@@ -23,27 +40,42 @@ const Accueil = () => {
             <div className="flex flex-col sm:flex-row gap-6">
               <a 
                 href="/projets" 
-                className="bg-indigo-600 text-white px-8 py-3 rounded-none hover:bg-indigo-700 transition font-medium text-center"
+                className="bg-indigo-600 text-white px-10 py-4 hover:bg-indigo-700 transition font-medium text-center"
               >
                 Voir mes projets
               </a>
               <a 
                 href="/contact" 
-                className="bg-white text-indigo-600 px-8 py-3 rounded-none hover:bg-gray-50 transition border border-indigo-600 font-medium text-center"
+                className="bg-white text-indigo-600 px-10 py-4 hover:bg-gray-50 transition border border-indigo-600 font-medium text-center"
               >
                 Me contacter
               </a>
             </div>
           </div>
           
-          {/* 3D Scene */}
-          <div className="flex-1 w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] rounded-none overflow-hidden bg-gray-50">
-            <Scene3D cameraPosition={[0, 0, 5]}>
-              <RotatingSphere position={[0, 0, 0]} color="#4F46E5" speed={0.01} />
-              <RotatingSphere position={[2.5, 1, -2]} color="#6366F1" speed={0.015} />
-              <RotatingSphere position={[-2.5, -1, -2]} color="#818CF8" speed={0.012} />
-            </Scene3D>
+          {/* Scène 3D à droite */}
+          <div className="w-full lg:w-1/2 h-[400px] sm:h-[550px] lg:h-[700px] bg-gray-50 order-1 lg:order-2">
+            <Canvas camera={{ position: [0, 0, 5], fov: 35 }}>
+              <Suspense fallback={null}>
+                {/* PresentationControls permet à l'utilisateur de manipuler la carte */}
+                <PresentationControls
+                  global
+                  config={{ mass: 2, tension: 400 }}
+                  snap={{ mass: 3, tension: 200 }}
+                  rotation={[0, -0.5, 0]}
+                  polar={[-Math.PI / 4, Math.PI / 4]}
+                >
+                  {/* Stage gère l'éclairage parfait pour la carte */}
+                  <Stage environment="city" intensity={0.6} contactShadow={true}>
+                    <Center>
+                      <MoroccoMap />
+                    </Center>
+                  </Stage>
+                </PresentationControls>
+              </Suspense>
+            </Canvas>
           </div>
+
         </div>
       </div>
     </div>

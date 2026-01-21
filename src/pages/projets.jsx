@@ -1,5 +1,13 @@
+import React, { Suspense } from 'react';
+import { useGLTF, Stage, PresentationControls } from '@react-three/drei';
 import Scene3D from '../components/Scene3D';
-import GeometricShape from '../components/GeometricShape';
+
+// Composant interne pour charger les modèles GLB
+const Model = ({ path }) => {
+  const { scene } = useGLTF(path);
+  // Clone la scène pour pouvoir l'utiliser plusieurs fois si nécessaire
+  return <primitive object={scene.clone()} />;
+};
 
 const Projets = () => {
   const projets = [
@@ -8,49 +16,22 @@ const Projets = () => {
       titre: 'Application E-Commerce',
       description: 'Une plateforme de vente en ligne moderne avec gestion de panier et paiement sécurisé.',
       technologie: 'React, Node.js, MongoDB',
-      type: 'box',
-      color: '#4F46E5'
+      modelPath: '/models/fountain.glb', // Assurez-vous du chemin dans /public
     },
     {
       id: 2,
       titre: 'Dashboard Analytique',
       description: 'Tableau de bord interactif pour visualiser des données en temps réel avec graphiques 3D.',
       technologie: 'React, D3.js, WebGL',
-      type: 'torus',
-      color: '#10B981'
+      modelPath: '/models/pouf.glb',
     },
     {
       id: 3,
       titre: 'Jeu 3D Multi-joueurs',
       description: 'Jeu en ligne avec environnement 3D immersif et interactions en temps réel.',
       technologie: 'Three.js, Socket.io, Express',
-      type: 'octahedron',
-      color: '#F59E0B'
+      modelPath: '/models/teapot.glb',
     },
-    {
-      id: 4,
-      titre: 'Portfolio Interactif',
-      description: 'Site portfolio avec animations 3D et expérience utilisateur immersive.',
-      technologie: 'React Three Fiber, Tailwind CSS',
-      type: 'tetrahedron',
-      color: '#EF4444'
-    },
-    {
-      id: 5,
-      titre: 'Visualiseur de Données',
-      description: 'Application pour explorer des datasets complexes avec visualisations 3D interactives.',
-      technologie: 'React, Three.js, Python',
-      type: 'box',
-      color: '#8B5CF6'
-    },
-    {
-      id: 6,
-      titre: 'Simulateur Physique',
-      description: 'Simulation de phénomènes physiques avec rendu 3D et calculs en temps réel.',
-      technologie: 'React, WebGL, Physics.js',
-      type: 'torus',
-      color: '#06B6D4'
-    }
   ];
 
   return (
@@ -61,32 +42,36 @@ const Projets = () => {
             Mes Projets
           </h2>
           <p className="text-center text-gray-600 text-lg sm:text-xl font-light max-w-2xl mx-auto">
-            Découvrez mes réalisations avec des aperçus interactifs en 3D
+            Découvrez mes réalisations avec des aperçus interactifs de modèles 3D
           </p>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 sm:gap-16">
           {projets.map((projet) => (
-            <div 
-              key={projet.id} 
-              className="flex flex-col group"
-            >
-              {/* 3D Preview */}
-              <div className="h-56 sm:h-64 md:h-72 bg-gray-50 relative flex-shrink-0 mb-8 overflow-hidden">
-                <Scene3D cameraPosition={[0, 0, 3]} enableControls={false}>
-                  <GeometricShape 
-                    type={projet.type} 
-                    position={[0, 0, 0]} 
-                    color={projet.color}
-                    hoverColor={projet.color}
-                  />
+            <div key={projet.id} className="flex flex-col group">
+              
+              {/* 3D Preview Container */}
+              <div className="h-56 sm:h-64 md:h-72 bg-gray-50 relative flex-shrink-0 mb-8 overflow-hidden rounded-lg">
+                <Scene3D cameraPosition={[0, 0, 4]}>
+                  {/* Suspense gère l'attente pendant le chargement du fichier .glb */}
+                  <Suspense fallback={null}>
+                    {/* PresentationControls permet à l'utilisateur de faire tourner l'objet à la souris */}
+                    <PresentationControls global zoom={0.8} config={{ mass: 2, tension: 500 }} snap>
+                      {/* Stage gère automatiquement l'éclairage et le centrage du modèle */}
+                      <Stage environment="city" intensity={0.6} contactShadow={true}>
+                        <Model path={projet.modelPath} />
+                      </Stage>
+                    </PresentationControls>
+                  </Suspense>
                 </Scene3D>
               </div>
               
               {/* Project Info */}
               <div className="flex flex-col">
                 <h3 className="text-2xl font-light text-gray-900 mb-4">{projet.titre}</h3>
-                <p className="text-base text-gray-600 mb-6 font-light leading-relaxed flex-grow">{projet.description}</p>
+                <p className="text-base text-gray-600 mb-6 font-light leading-relaxed flex-grow">
+                  {projet.description}
+                </p>
                 <div className="flex flex-wrap gap-2 mb-8">
                   {projet.technologie.split(', ').map((tech, idx) => (
                     <span 
